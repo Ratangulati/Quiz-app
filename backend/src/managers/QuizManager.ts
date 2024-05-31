@@ -19,4 +19,16 @@ export class QuizManager {
             type: "START_ROOM",
         })
     }
+
+    addUser(roomId: string, name: string) {
+        return this.getQuiz(roomId)?.addUser(name);
+    }
+
+    submit(roomId: string, problemId: string, submission: 0 | 1 | 2 | 3) {
+        this.getQuiz(roomId)?.submit(roomId, problemId, submission);
+    }
+
+    getQuiz(roomId: string) {
+        return this.quizes.find(x => x.roomId === roomId) ?? null;  
+    }
 }
