@@ -5,11 +5,6 @@ const ADMIN_PASSWORD = "ADMIN_PASSWORD";
 export class UserManager {
     private quizManager;
 
-    private users: {
-        roomId: string;
-        socket: Socket;
-    }[];
-
     constructor() {
         this.quizManager = new QuizManager
     }

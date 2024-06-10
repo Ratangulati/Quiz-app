@@ -1,6 +1,7 @@
+
 import { IoManager } from "./managers/IoManager";
 
-export type AlloweSubmissions =  0 | 1 | 2 | 3
+export type AllowedSubmissions = 0 | 1 | 2 | 3;
 const PROBLEM_TIME_S = 20;
 
 
@@ -14,17 +15,17 @@ interface Submission {
     problemId: string;
     userId: string;
     isCorrect: boolean;
-    optionSelected: AlloweSubmissions
+    optionSelected: AllowedSubmissions
 }
 
 interface Problem {
     id: string;
     title: string;
-    description : string;
-    image: string;
-    startTime?: number;
-    answer:  AlloweSubmissions;
-    option: {
+    description: string;
+    image?: string;
+    startTime: number;
+    answer: AllowedSubmissions; // 0, 1, 2, 3
+    options: {
         id: number;
         title: string;
     }[]
@@ -36,7 +37,7 @@ export class Quiz {
     public roomId: string;
     private hasStarted: boolean;
     private problems: Problem[];
-    private activeProblem = number;
+    private activeProblem: number;
     private users: User[];
     private currentState: "leaderboard" | "question" | "not_started" | "ended";
     
@@ -45,6 +46,7 @@ export class Quiz {
         this.roomId = roomId;
         this.hasStarted = false;
         this.problems = []
+        this.activeProblem = 0;
         this.users = [];
         this.currentState = "not_started";
         console.log("room created");
@@ -62,13 +64,14 @@ export class Quiz {
     }
 
     addProblem(problem: Problem) {
-          this.problems.push(problem)
+        this.problems.push(problem);
+        console.log(this.problems);
     }
     start() {
         this.hasStarted = true;
         this.setActiveProblem(this.problems[0]);
     }
-
+    
     setActiveProblem(problem: Problem) {
         console.log("set active problem")
         this.currentState = "question"
@@ -77,6 +80,7 @@ export class Quiz {
         IoManager.getIo().to(this.roomId).emit("problem", {
             problem
         })
+        // Todo: clear this if function moves ahead
         setTimeout(() => {
             this.sendLeaderboard();
         }, PROBLEM_TIME_S * 1000);
@@ -90,11 +94,10 @@ export class Quiz {
             leaderboard
         })
     }
-    
-    next(){
+    next() {
         this.activeProblem++;
         const problem = this.problems[this.activeProblem];
-        // const io = IoManager.getIo();
+
         if (problem) {
             this.setActiveProblem(problem);
         } else {
@@ -113,7 +116,7 @@ export class Quiz {
            result += chars.charAt(Math.floor(Math.random() * charLength));
         }
         return result;
-    }
+     }
     addUser(name: string) {
         const id = this.genRandonString(7);
         this.users.push({
@@ -121,9 +124,11 @@ export class Quiz {
             name,
             points: 0
         })
-        return id
+        return id;
     }
-    submit(userId: string, roomId: string, problemId: string, submission: AlloweSubmissions) {
+    submit(userId: string, roomId: string, problemId: string, submission: AllowedSubmissions) {
+        console.log("userId");
+        console.log(userId);
         const problem = this.problems.find(x => x.id == problemId);
         const user = this.users.find(x => x.id === userId);
  
@@ -145,7 +150,7 @@ export class Quiz {
             optionSelected: submission
         });
         user.points += (1000 - (500 * (new Date().getTime() - problem.startTime) / (PROBLEM_TIME_S * 1000)));
-
+        
     }
 
     getLeaderboard() {
